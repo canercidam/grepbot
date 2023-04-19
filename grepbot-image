@@ -1,0 +1,23 @@
+#!/bin/bash
+
+BOT_ID="$1"
+FULL_IMAGE_REF="$2"
+INCLUDES="$3"
+
+GREPBOT_DIR="grepbot-bots"
+BOT_FS_DIR="$GREPBOT_DIR/$BOT_ID"
+BOT_CONTAINER="tmp-bot-$BOT_ID"
+BOT_TAR="$BOT_ID.tar"
+
+docker container rm "$BOT_CONTAINER" &> /dev/null
+rm -rf "$BOT_FS_DIR"
+mkdir -p "$GREPBOT_DIR"
+mkdir -p "$BOT_FS_DIR"
+
+docker create --name "$BOT_CONTAINER" "$FULL_IMAGE_REF" &> /dev/null
+docker export "$BOT_CONTAINER" > "$BOT_TAR"
+docker container rm "$BOT_CONTAINER" &> /dev/null
+tar xf "$BOT_TAR" --directory="$BOT_FS_DIR"
+rm -rf "$BOT_TAR"
+
+ag "$INCLUDES" "$BOT_FS_DIR" -l --ignore-dir node_modules

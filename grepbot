@@ -1,0 +1,11 @@
+#!/bin/bash
+
+BOT_ID="$1"
+INCLUDES="$2"
+QUERY_STRING='{"operationName":"Retrive","variables":{"getAgentInput":{"id":"'$BOT_ID'"}},"query":"query Retrive($getAgentInput: AgentInformation) {\n  getAgentInformation(input: $getAgentInput) {\n    image\n}\n}\n"}';
+
+BOT_RESP=$(curl -s -X POST -H "Content-Type: application/json" https://explorer-api.forta.network/graphql -d "$QUERY_STRING")
+IMAGE_REF=$(echo "$BOT_RESP" | jq -r .data.getAgentInformation[0].image)
+FULL_IMAGE_REF="disco.forta.network/$IMAGE_REF"
+
+./grepbot-image "$BOT_ID" "$FULL_IMAGE_REF" "$INCLUDES"
